@@ -1,0 +1,25 @@
+;; -*-scheme-*-
+(Header "
+    from item       : ControlInput.dco
+    date            : 220620
+    category        : comm object specification
+    description     : Simple joystick control input
+    copyright       : (c) 2022 ...
+    language        : C++")
+ 
+;; Only type needed is float, define that
+(Type float)
+ 
+;; Communication of essential stick inputs to the SimpleSimulation UFO
+(Object ControlInput
+  ;; enable packing into messagepack format
+  (Option msgpack)
+  ;; Roll input
+  (float roll (Default 0.0f))
+  ;; Pitch input
+  (float pitch (Default 0.0f))
+  ;; Yawing
+  (float yaw (Default 0.0f))
+  ;; Commanded speed
+  (float throttle (Default 0.0f))
+)
