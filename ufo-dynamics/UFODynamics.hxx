@@ -13,14 +13,18 @@
 #ifndef UFODynamics_hxx
 #define UFODynamics_hxx
 
+// include headers for functions/classes you need in the module
+
+#include <array>
+#include <extra/RigidBody.hxx>
+#include <extra/integrate_rungekutta.hxx>
+
 // include the dusime header
 #include <dusime.h>
 USING_DUECA_NS;
 
 // This includes headers for the objects that are sent over the channels
 #include "comm-objects.h"
-
-// include headers for functions/classes you need in the module
 
 
 /** A module.
@@ -38,17 +42,32 @@ class UFODynamics: public SimulationModule
 private: // simulation data
   // declare the data you need in your simulation
 
+    // Rigid body dynamics
+  RigidBody            body;
+
+  // Workspace for the integration
+  RungeKuttaWorkspace  ws;
+
+  // Time constant for following rotational inputs
+  double               tau_r;
+
+    // Time constant for following linear inputs
+  double               tau_v;
+
+
 private: // trim calculation data
   // declare the trim calculation data needed for your simulation
 
 private: // snapshot data
   // declare, if you need, the room for placing snapshot data
 
+    // temporary storage for the capturing the state
+  //std::array<12,double> snapcopy;
 private: // channel access
   // declare access tokens for all the channels you read and write
   // examples:
-  // ChannelReadToken    r_mytoken;
-  // ChannelWriteToken   w_mytoken;
+  ChannelReadToken    r_controls;
+  ChannelWriteToken   w_egomotion;
 
 private: // activity allocation
   /** You might also need a clock. Don't mis-use this, because it is
@@ -82,6 +101,7 @@ public: // construction and further specification
       reading the 4 GB of wind tables) should be done here.
       Return false if something in the parameters is wrong (by
       the way, it would help if you printed what!) May be deleted. */
+
   bool complete();
 
   /** Destructor. */

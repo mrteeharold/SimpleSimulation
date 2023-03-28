@@ -68,17 +68,17 @@ if this_node_id == ecs_node:
 
     # remove the quotes to enable DUSIME initial condition recording and
     # setting, and simulation recording and replay
-    '''
-    for e in ("PHLAB",):
+    
+    for e in ("SIMPLE",):
         DUECA_mods.append(
             dueca.Module("initials-inventory", e, admin_priority).param(
-                reference_file=f"initials-{e}.toml",
+                # reference_file=f"initials-{e}.toml",
                 store_file=f"initials-{e}-%Y%m%d_%H%M.toml"))
         DUECA_mods.append(
             dueca.Module("replay-master", e, admin_priority).param(
-                reference_files=f"recordings-{e}.ddff",
+                # reference_files=f"recordings-{e}.ddff",
                 store_files=f"recordings-{e}-%Y%m%d_%H%M%S.ddff"))
-    '''
+    
 
     # create the DUECA entity with that list
     DUECA_entity = dueca.Entity("dueca", DUECA_mods)
@@ -89,9 +89,91 @@ mymods = []
 
 if this_node_id == ecs_node:
     mymods.append(dueca.Module(
-        "some-module-i-created", "", sim_priority).param(
+        "flexi-stick", "", sim_priority).param(
             set_timing = sim_timing,
-            check_timing = (10000, 20000)))
+            enable_record_replay = False,
+            check_timing = (1000, 2000)).param(
+            # logitech stick, first SDL device
+            ('add_device', "logi:0"),
+ 
+            # by default, axes go from -1 to 1, convert throttle to
+            # run from -1 to 5 (slow back-up to forward 5m/s), with
+            # a polynomial. The throttle is on axis 2 of the stick
+            ('create_poly', ('throttle', 'logi.a[2]')),
+            ('poly_params', (2, -3)),
+            ('create_poly', ('roll', 'logi.a[0]')),
+            ('poly_params', (0, -1)),
+            ('create_poly', ('pitch', 'logi.a[1]')),
+            ('poly_params', (0, -1)),
+            ('create_poly', ('yaw', 'logi.a[2]')),
+            ('poly_params', (0, -1)),
+ 
+            # define that we write a channel
+            ('add_channel',
+             ('controls',              # variable
+              'ControlInput://SIMPLE', # channel name
+              'ControlInput',          # data type
+              'control input')),       # label
+ 
+            # link axis 0 to control roll, etc, etc
+            ("add_link", ("controls.roll", "roll")),
+            ("add_link", ("controls.pitch", "pitch")),
+            ("add_link", ("controls.yaw", "yaw")),
+            ("add_link", ("controls.throttle", "throttle"))
+            )
+    )
+    # our new dynamics module
+    mymods.append(dueca.Module(
+    "ufo-dynamics", "", sim_priority).param(
+        set_timing = sim_timing,
+        check_timing = (1000, 2000)))
+
+    # the visual output
+    mymods.append(dueca.Module(
+        "world-view", "", admin_priority).param(
+        set_timing = display_timing,
+        check_timing = (8000, 9000),
+        set_viewer =
+        dueca.OSGViewer().param(
+            # set up window
+            ('add_window', 'front'),
+            ('window_size+pos', (800, 600, 10, 10)),
+            ('add_viewport', 'front'),
+            ('viewport_window', 'front'),
+            ('viewport_pos+size', (0, 0, 800, 600)),
+
+            # add visual objects (classes, then instantiation)
+            ('add-object-class-data',
+             ("static:sunlight", "sunlight", "static-light")),
+            ('add-object-class-coordinates',
+             (0.48, 0.48, 0.48, 1,   # ambient
+              0.48, 0.48, 0.48, 1,   # diffuse
+              0.0, 0.0, 0.0, 1,      # specular
+              0.4, 0.0, 1.0, 0,      # south??
+              0, 0, 0,               # direction not used
+              0.2, 0, 0)),           # no attenuation for sun
+            # create an object class for the terrain, to be represented
+            # as a static (not position controlled) object, with
+            # terrain.obj as the file defining it
+            ('add-object-class-data',
+             ("static:terrain", "terrain", "static", "terrain.obj")),
+            # same for skydome
+            ('add-object-class-data',
+             ("centered:skydome", "skydome", "centered", "skydome.obj")),
+            # move the skydome default position a bit down
+            ('add-object-class-coordinates',
+             (0.0, 0.0, 50.0)),
+
+            # make static objects through the configuration.
+            # These match the creation keys (static:sunlight etc), to
+            # find the right object class.
+            ('static-object', ('static:sunlight', 'sunlight')),
+            ('static-object', ('static:terrain', 'terrain')),
+            ('static-object', ('centered:skydome', 'skydome'))
+        )
+        )
+)
+
 
     # Uncomment and adapt for web-based graph, see DUECA documentation.
     # This also serves the static files for the default plotting application
@@ -128,4 +210,4 @@ if this_node_id == ecs_node:
 
 # then combine in an entity (one "copy" per node)
 if mymods:
-    myentity = dueca.Entity("PHLAB", mymods)
+    myentity = dueca.Entity("SIMPLE", mymods)

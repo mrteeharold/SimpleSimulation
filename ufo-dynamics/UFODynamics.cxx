@@ -93,6 +93,15 @@ UFODynamics::UFODynamics(Entity* e, const char* part, const
   SimulationModule(e, classname, part, getMyIncoTable(), 1),
 
   // initialize the data you need in your simulation
+  body(1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0),
+  ws(13),
+  tau_r(0.5),
+  tau_v(2.0),
+
+  // set the UFO at a reasonable height (not in the ice, above it!)
+  // body.initialize(0.0, 0.0, -3.0, 0.0, 0.0, 0.0,
+  //             0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+
 
   // initialize the data you need for the trim calculation
 
@@ -102,7 +111,11 @@ UFODynamics::UFODynamics(Entity* e, const char* part, const
   //           MyData::classname, 0, Channel::Events, Channel::ReadAllData),
   // w_mytoken(getId(), NameSet(getEntity(), MyData::classname, part),
   //           MyData::classname, "label", Channel::Continuous),
-
+  r_controls(getId(), NameSet(getEntity(), "ControlInput", part),
+             "ControlInput", 0, Channel::Continuous, Channel::OnlyOneEntry),
+  w_egomotion(getId(), NameSet(getEntity(), "ObjectMotion", part),
+              "BaseObjectMotion", "ufo movement", Channel::Continuous,
+              Channel::OnlyOneEntry),
   // activity initialization
   // myclock(),
   cb1(this, &_ThisModule_::doCalculation),
@@ -111,12 +124,11 @@ UFODynamics::UFODynamics(Entity* e, const char* part, const
   // do the actions you need for the simulation
 
   // connect the triggers for simulation
-  do_calc.setTrigger(/* fill in your triggering channels,
-                        or enter the clock here */);
+  do_calc.setTrigger(r_controls);
 
   // connect the triggers for trim calculation. Leave this out if you
   // don not need input for trim calculation
-  trimCalculationCondition(/* fill in your trim triggering channels */);
+  // trimCalculationCondition(/* fill in your trim triggering channels */);
 }
 
 bool UFODynamics::complete()
@@ -171,7 +183,8 @@ bool UFODynamics::isPrepared()
   bool res = true;
 
   // Example checking a token:
-  // CHECK_TOKEN(w_somedata);
+  CHECK_TOKEN(r_controls);
+  CHECK_TOKEN(w_egomotion);
 
   // Example checking anything
   // CHECK_CONDITION(myfile.good());
@@ -202,6 +215,10 @@ void UFODynamics::fillSnapshot(const TimeSpec& ts,
   // The most efficient way of filling a snapshot is with an AmorphStore
   // object.
   AmorphStore s(snap.accessData(), snap.getDataSize());
+  // assert(snap.getDataSize() == sizeof(snapcopy));
+
+  // set the right format
+  snap.coding = Snapshot::Doubles;
 
   if (from_trim) {
     // use packData(s, trim_state_variable1); ... to pack your state into
@@ -213,6 +230,9 @@ void UFODynamics::fillSnapshot(const TimeSpec& ts,
     // pack the data you copied into (or left into) the snapshot state
     // variables in here
     // use packData(s, snapshot_state_variable1); ...
+    // for (const auto &xs: snapcopy) {
+    //   packData(s, xs);
+    // }
   }
 }
 
@@ -223,6 +243,9 @@ void UFODynamics::loadSnapshot(const TimeSpec& t, const Snapshot& snap)
 {
   // access the data in the snapshot with an AmorphReStore object
   AmorphReStore s(snap.data, snap.getDataSize());
+  double x(s), y(s), z(s), u(s), v(s), w(s);
+  double phi(s), theta(s), psi(s), p(s), q(s), r(s);
+  body.initialize(x, y, z, u, v, w, phi, theta, psi, p, q, r);
 
   // use unPackData(s, real_state_variable1 ); ... to unpack the data
   // from the snapshot.
@@ -245,16 +268,6 @@ void UFODynamics::doCalculation(const TimeSpec& ts)
 
   case SimulationState::Replay:
   case SimulationState::Advance: {
-    // access the input
-    // example:
-    // try {
-    //   DataReader<MyInput> u(input_token, ts);
-    //   throttle = u.data().throttle;
-    //   de = u.data().de; ....
-    // }
-    // catch(Exception& e) {
-    //   // strange, there is no input. Should I try to continue or not?
-    // }
     /* The above piece of code shows a block in which you try to catch
        error conditions (exceptions) to handle the case in which the input
        data is lost. This is not always necessary, if you normally do not
@@ -262,7 +275,23 @@ void UFODynamics::doCalculation(const TimeSpec& ts)
        it happens, forget about the try/catch blocks. */
 
     // do the simulation calculations, one step
-
+    try {
+      DataReader<ControlInput> u(r_controls, ts);
+          // apply forces on the body
+      body.zeroForces();
+      Vector3 moms { -u.data().roll, -u.data().pitch, -u.data().yaw };
+      body.applyBodyMoment((moms - body.X().segment(6,3))/tau_r);
+      Vector3 forces { u.data().throttle, 0.0, 0.0 };
+      static Vector3 cg {0.0, 0.0, 0.0};
+      body.applyBodyForce((forces - body.X().segment(0,3))/tau_v, cg);
+      // printing, for now
+      // std::cout << u.data() << std::endl;
+    }
+    catch(std::exception& e) {
+      W_MOD("Could not read control input at " << ts);
+    }
+    // do the simulation calculations, one step
+    integrate_rungekutta(body, ws, ts.getDtInSeconds());
     break;
     }
   default:
@@ -281,15 +310,36 @@ void UFODynamics::doCalculation(const TimeSpec& ts)
 
   // write the output into the output channel, using the stream writer
   // y.data().var1 = something; ...
-
+    body.output();
+    DataWriter<BaseObjectMotion> y(w_egomotion, ts);
+    for (unsigned ii = 3; ii--; ) {
+      y.data().xyz[ii] = body.X()[3+ii];
+      y.data().uvw[ii] = body.X()[ ii];
+      y.data().omega[ii] = body.X()[6+ii];
+    }
+    y.data().setquat(body.phi(), body.theta(), body.psi());
+ 
+    // set our viewpoint high enough to see something
+    // y.data().xyz[2] = -3.0;
+ 
   if (snapshotNow()) {
     // keep a copy of the model state. Snapshot sending is done in the
     // sendSnapshot routine, later, and possibly at lower priority
     // e.g.
     // snapshot_state_variable1 = state_variable1; ...
     // (or maybe if your state is very large, there is a cleverer way ...)
+      // keep a copy of the current state
+    for (unsigned ii = 3; ii--; ) {
+      // snapcopy[ii] = body.X()[3+ii]; // copy xyz
+      // snapcopy[3+ii] = body.X()[ii]; // uvw
+      // snapcopy[9+ii] = body.X()[6+ii]; // pqr
+    }
+    // snapcopy[6] = body.phi();
+    // snapcopy[7] = body.theta();
+    // snapcopy[8] = body.psi();
   }
 }
+
 
 void UFODynamics::trimCalculation(const TimeSpec& ts, const TrimMode& mode)
 {

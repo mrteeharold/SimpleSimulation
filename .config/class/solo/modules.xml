@@ -21,5 +21,17 @@
 <machine xmlns="https://dueca.tudelft.nl" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://dueca.tudelft.nl modules.xsd">
   <project>
     <url>origin:///SimpleSimulation.git</url>
+    <module>ufo-dynamics</module>
+  </project>
+  <project>
+    <url>dgrpub:///FlexiStick.git</url>
+    <module>flexi-stick</module>
+  </project>
+  <project>
+    <url>dgrbase:///WorldView.git</url>
+    <module>WorldView</module>
+    <module>OSGViewer</module>
+    <module>SpecificationBase</module>
+    <module pseudo="true">icy-world</module>
   </project>
 </machine>

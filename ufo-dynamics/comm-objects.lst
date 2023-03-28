@@ -3,3 +3,5 @@
 # specify these with the .dco extension, examples:
 # SimpleSimulation/comm-objects/MyDataObject.dco
 # Generic/comm-objects/PrimaryControls.dco
+SimpleSimulation/comm-objects/ControlInput.dco
+WorldView/comm-objects/BaseObjectMotion.dco
