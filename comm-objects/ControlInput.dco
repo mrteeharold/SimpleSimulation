@@ -13,7 +13,7 @@
 ;; Communication of essential stick inputs to the SimpleSimulation UFO
 (Object ControlInput
   ;; enable packing into messagepack format
-  (Option msgpack)
+  ;;  (Option msgpack)
   ;; Roll input
   (float roll (Default 0.0f))
   ;; Pitch input
