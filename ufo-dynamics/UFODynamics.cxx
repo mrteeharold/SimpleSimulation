@@ -99,8 +99,8 @@ UFODynamics::UFODynamics(Entity* e, const char* part, const
   tau_v(2.0),
 
   // set the UFO at a reasonable height (not in the ice, above it!)
-  // body.initialize(0.0, 0.0, -3.0, 0.0, 0.0, 0.0,
-  //             0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+//  body.initialize(0.0, 0.0, -3.0, 0.0, 0.0, 0.0,
+//               0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 
 
   // initialize the data you need for the trim calculation
@@ -122,6 +122,9 @@ UFODynamics::UFODynamics(Entity* e, const char* part, const
   do_calc(getId(), "update ufo dynamics", &cb1, ps)
 {
   // do the actions you need for the simulation
+ // set the UFO at a reasonable height (not in the ice, above it!)
+  body.initialize(0.0, 0.0, -3.0, 0.0, 0.0, 0.0,
+               0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 
   // connect the triggers for simulation
   do_calc.setTrigger(r_controls);

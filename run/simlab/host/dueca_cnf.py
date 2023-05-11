@@ -7,8 +7,8 @@ import dueca
 
 ### parameters defining cooperation with other nodes
 this_node_id = 0                       # id of the current node
-no_of_nodes = 1                        # total number of nodes used
-send_order = 0                         # order/prio in send cycle
+no_of_nodes = 2                        # total number of nodes used
+send_order = 1                         # order/prio in send cycle
 
 ### parameter defining real_time behaviour
 highest_manager = 4                    # max priority of activities
@@ -32,10 +32,10 @@ tick_time_step = 0.01                  # time step for each tick
 communication_interval = 100           # interval for initiating comm
 
 ### parameter for communication using multicast
-if_address = "127.0.0.1"            # address of own ip interface
+if_address = "131.180.17.12"            # address of own ip interface
 mc_address = "224.0.0.1"               # multicast address
 mc_port = 7500                         # master control port
-master_host = "127.0.0.1"          # hostname or IP of the comm master
+master_host = "131.180.18.96"          # hostname or IP of the comm master
 
 ### parameters for udp/websocket based communication (new style)
 ### * on the comm master (send-order 0), adjust the config url to a websocket
@@ -47,8 +47,8 @@ config_url = "ws://" + master_host + ":" + str(mc_port) + "/config"
 ###   multicast, broadcast, or else peer-to-peer
 ###   If using websockets (less real-time, better for crossing firewalls),
 ###   the websocket base URL must match the configuration socket
-#data_url = "udp://" + mc_address + ":" + str(mc_port+1)
-data_url = "ws://" + master_host + ":" + str(mc_port) + "/data"
+data_url = "udp://" + mc_address + ":" + str(mc_port+1)
+#data_url = "ws://" + master_host + ":" + str(mc_port) + "/data"
 
 ### common communication parameters
 packet_size = 8192                     # size of packets

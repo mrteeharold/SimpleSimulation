@@ -52,7 +52,7 @@ log_timing = dueca.TimeSpec(0, 400)
 
 ## ---------------------------------------------------------------------
 ### the modules needed for dueca itself
-if this_node_id == host:
+if this_node_id == host_node:
 
     # create a list of modules:
     DUECA_mods = []
@@ -124,17 +124,65 @@ if this_node_id == host_node:
             ("add_link", ("controls.throttle", "throttle"))
             )
     )
+    
     # our new dynamics module
     mymods.append(dueca.Module(
     "ufo-dynamics", "", sim_priority).param(
         set_timing = sim_timing,
         check_timing = (1000, 2000)))
-
+    
     # ensure only the outside visual is only on the ig 
-    if this_node_id = ig_node:
+if this_node_id == ig_node:
     # the visual output
     mymods.append(dueca.Module(
-        "world-view", "", admin_priority).param(
+        "world-view", "ig", admin_priority).param(
+        set_timing = display_timing,
+        check_timing = (8000, 9000),
+        set_viewer =
+        dueca.OSGViewer().param(
+            # set up window
+            ('add_window', 'front'),
+            ('window_size+pos', (800, 600, 10, 10)),
+            ('add_viewport', 'front'),
+            ('viewport_window', 'front'),
+            ('viewport_pos+size', (0, 0, 800, 600)),
+
+            # add visual objects (classes, then instantiation)
+            ('add-object-class-data',
+             ("static:sunlight", "sunlight", "static-light")),
+            ('add-object-class-coordinates',
+             (0.48, 0.48, 0.48, 1,   # ambient
+              0.48, 0.48, 0.48, 1,   # diffuse
+              0.0, 0.0, 0.0, 1,      # specular
+              0.4, 0.0, 1.0, 0,      # south??
+              0, 0, 0,               # direction not used
+              0.2, 0, 0)),           # no attenuation for sun
+            # create an object class for the terrain, to be represented
+            # as a static (not position controlled) object, with
+            # terrain.obj as the file defining it
+            ('add-object-class-data',
+             ("static:terrain", "terrain", "static", "terrain.obj")),
+            # same for skydome
+            ('add-object-class-data',
+             ("centered:skydome", "skydome", "centered", "skydome.obj")),
+            # move the skydome default position a bit down
+            ('add-object-class-coordinates',
+             (0.0, 0.0, 50.0)),
+
+            # make static objects through the configuration.
+            # These match the creation keys (static:sunlight etc), to
+            # find the right object class.
+            ('static-object', ('static:sunlight', 'sunlight')),
+            ('static-object', ('static:terrain', 'terrain')),
+            ('static-object', ('centered:skydome', 'skydome'))
+        )
+        )
+)
+
+if this_node_id == host_node:
+    # the visual output
+    mymods.append(dueca.Module(
+        "world-view", "host", admin_priority).param(
         set_timing = display_timing,
         check_timing = (8000, 9000),
         set_viewer =
