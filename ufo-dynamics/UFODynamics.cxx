@@ -116,6 +116,10 @@ UFODynamics::UFODynamics(Entity* e, const char* part, const
   w_egomotion(getId(), NameSet(getEntity(), "ObjectMotion", part),
               "BaseObjectMotion", "ufo movement", Channel::Continuous,
               Channel::OnlyOneEntry),
+  hudw_token(getId(), NameSet(getEntity(), "HUDData", part),
+	      "HUDData","",Channel::Continuous,
+	      Channel::OnlyOneEntry),
+
   // activity initialization
   // myclock(),
   cb1(this, &_ThisModule_::doCalculation),
@@ -322,6 +326,31 @@ void UFODynamics::doCalculation(const TimeSpec& ts)
     }
     y.data().setquat(body.phi(), body.theta(), body.psi());
  
+    cout << "x  = " <<  body.X()[2] << endl;
+    cout << "y  = " <<  body.X()[1] << endl;
+    cout << "z  = " <<  body.X()[0] << endl;
+    cout << "u  = " << body.X()[5] << endl;
+    cout << "v  = " << body.X()[4] << endl;
+    cout << "w  = " << body.X()[3] << endl;
+    cout << "omega 2 = " << body.X()[8] << endl;
+    cout << "omega 1 = " << body.X()[7] << endl;
+    cout << "omega 0  = " << body.X()[6] << endl;
+    DataWriter<HUDData> hud(hudw_token, ts);
+       hud.data().ias = body.X()[6];
+       hud.data().alt = body.X()[2];
+       hud.data().pitch = body.X()[3];
+       hud.data().roll = body.X()[4];
+       hud.data().heading = body.X()[2];
+       hud.data().loadfactor = body.X()[5];
+    //   hud.data().xpos = body.X()[3];
+    //   hud.data().ypos = body.X()[2];
+    //   hud.data().zpos = body.X()[1];
+    //   hud.data().u = body.X()[3];
+     //  hud.data().v = body.X()[2];
+    //   hud.data().w = body.X()[1];
+    //   hud.data().vel0 = body.X()[6];
+    //   hud.data().vel0 = body.X()[5];
+    //   hud.data().vel0 = body.X()[4];
     // set our viewpoint high enough to see something
     // y.data().xyz[2] = -3.0;
  

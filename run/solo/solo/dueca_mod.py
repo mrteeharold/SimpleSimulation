@@ -127,12 +127,22 @@ if this_node_id == ecs_node:
     "ufo-dynamics", "", sim_priority).param(
         set_timing = sim_timing,
         check_timing = (1000, 2000)))
-
+    # the HUD
+    mymods.append(dueca.Module(
+        "f16-hud", "", admin_priority).param(
+        set_timing = display_timing))
     # the visual output
     mymods.append(dueca.Module(
         "world-view", "", admin_priority).param(
         set_timing = display_timing,
         check_timing = (8000, 9000),
+        claim_thread = False,
+        restore_context = False,
+        predict_dt = 0.0,
+        predict_dt_max = 0.0,
+        initial_camera = (0.0, 0.0, -10.0, 0.0, 0.0, 0.0),
+        add_world_information_channel =
+    ("ObjectMotion://world","HUDData://SIMPLE"),
         set_viewer =
         dueca.OSGViewer().param(
             # set up window
@@ -169,8 +179,15 @@ if this_node_id == ecs_node:
             # find the right object class.
             ('static-object', ('static:sunlight', 'sunlight')),
             ('static-object', ('static:terrain', 'terrain')),
-            ('static-object', ('centered:skydome', 'skydome'))
-        )
+            ('static-object', ('centered:skydome', 'skydome')),
+
+            # HUD on main viewport, looking for HUDData
+            add_object_class_data = ("HUDData", "hud", "f16hud", "front"),
+            set_frustum = (0.5, 10000, 30),
+            set_bg_color = (0,0,1),
+            set_fog = (2, 0.0, 0.0, 0.0, 0.5, 1.0, 10000.0, 100000.0),
+            use_compositeviewer = False,
+            allow_unknown = True)
         )
 )
 

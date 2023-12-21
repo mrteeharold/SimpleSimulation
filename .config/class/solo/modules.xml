@@ -22,6 +22,7 @@
   <project>
     <url>origin:///SimpleSimulation.git</url>
     <module>ufo-dynamics</module>
+    <module>F16HUD</module>
   </project>
   <project>
     <url>dgrpub:///FlexiStick.git</url>

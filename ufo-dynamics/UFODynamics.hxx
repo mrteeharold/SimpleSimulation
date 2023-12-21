@@ -68,6 +68,8 @@ private: // channel access
   // examples:
   ChannelReadToken    r_controls;
   ChannelWriteToken   w_egomotion;
+  ChannelWriteToken   hudw_token;
+
 
 private: // activity allocation
   /** You might also need a clock. Don't mis-use this, because it is
