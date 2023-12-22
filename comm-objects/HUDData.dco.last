@@ -1,0 +1,10 @@
+(Type float)
+
+(Stream HUDData
+ (float ias)
+ (float alt)
+ (float pitch)
+ (float roll)
+ (float heading)
+ (float loadfactor)
+)

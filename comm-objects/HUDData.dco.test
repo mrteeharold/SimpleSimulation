@@ -1,0 +1,13 @@
+(Type float)
+
+(Stream HUDData
+ (float xpos)
+ (float ypos)
+ (float zpos)
+ (float u)
+ (float v)
+ (float w)
+ (float vel0)
+ (float vel1)
+ (float vel2)
+)
