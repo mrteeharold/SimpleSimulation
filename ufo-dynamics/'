@@ -330,7 +330,7 @@ void UFODynamics::doCalculation(const TimeSpec& ts)
     
     // copy this, so others see where we are (in multiplayer)
     DataWriter<BaseObjectMotion> pub(w_world, ts);
-    pub.data() = y.data();
+    pub.data() = y.data()
     // cout << "x  = " <<  body.X()[2] << endl;
     // cout << "y  = " <<  body.X()[1] << endl;
     // cout << "z  = " <<  body.X()[0] << endl;
