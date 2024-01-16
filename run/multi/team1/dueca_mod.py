@@ -146,7 +146,8 @@ if this_node_id == ecs_node:
         predict_dt_max = 0.0,
         initial_camera = (0.0, 0.0, -10.0, 0.0, 0.0, 0.0),
         add_world_information_channel =
-    ("ObjectMotion://world","HUDData://team1"),
+        #("ObjectMotion://world","HUDData://team1"),
+                  ("BaseObjectMotion://world",),
         set_viewer =
         dueca.OSGViewer().param(
             # set up window
@@ -184,14 +185,25 @@ if this_node_id == ecs_node:
             ('static-object', ('static:sunlight', 'sunlight')),
             ('static-object', ('static:terrain', 'terrain')),
             ('static-object', ('centered:skydome', 'skydome')),
+            #object class for teams
+#            ('add-object-class-data',
+#            ('BaseObjectMotion:team1', 'Team One', 'moving',
+#             'platillo.obj')),
+#            ('add-object-class-data',
+#            ('BaseObjectMotion:team2', 'Team Two', 'moving',
+#             'platillo.obj')),
+            ('add-object-class-data',
+            ('BaseObjectMotion', 'Team #', 'moving',
+             'mav1.ac')),
 
             # HUD on main viewport, looking for HUDData
-            add_object_class_data = ("HUDData", "hud", "f16hud", "front"),
-            set_frustum = (0.5, 10000, 30),
-            set_bg_color = (0,0,1),
-            set_fog = (2, 0.0, 0.0, 0.0, 0.5, 1.0, 10000.0, 100000.0),
-            use_compositeviewer = False,
-            allow_unknown = True)
+            #add_object_class_data = ("HUDData", "hud", "f16hud", "front"),
+            #set_frustum = (0.5, 10000, 30),
+            #set_bg_color = (0,0,1),
+            #set_fog = (2, 0.0, 0.0, 0.0, 0.5, 1.0, 10000.0, 100000.0),
+            #use_compositeviewer = False,
+            #allow_unknown = True)
+        )
         )
 )
 

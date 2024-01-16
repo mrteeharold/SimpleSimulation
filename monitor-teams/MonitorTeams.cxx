@@ -210,11 +210,12 @@ void MonitorTeams::doCalculation(const TimeSpec& ts)
   // write the output into the output channel, using the data writer
   // y.data().var1 = something; ...
   unsigned ecount = 0;
+  r_world.selectFirstEntry();
   while (r_world.haveEntry()) {
 	  ecount++;
 	  try {
 		  DataReader<BaseObjectMotion,MatchIntervalStartOrEarlier> om(r_world);
-		  std::cout << "Ufo " << r_world.getEntryLabel() << "now at "
+		  std::cout << "Ufo " << r_world.getEntryLabel() << " now at "
 			  << om.data().xyz << std::endl;
 		  std::cout << "Current tick " << ts.getValidityStart()
 			  << ", data generated at "
@@ -226,7 +227,7 @@ void MonitorTeams::doCalculation(const TimeSpec& ts)
 	  r_world.selectNextEntry();
   }
   // this shows we looked
-  std::cout << "There were " << ecount << " entried" << std::endl;
+  std::cout << "There were " << ecount << " entries" << std::endl;
 }
 
 void MonitorTeams::doNotify(const TimeSpec& ts)

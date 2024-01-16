@@ -23,3 +23,8 @@ fi
 # Added for SimpleSimulation, link .obj and .mtl files for the visual
 ln -sf ../../../../WorldView/icy-world/*.obj .
 ln -sf ../../../../WorldView/icy-world/*.mtl .
+#
+#ufo
+#
+ln -sf $DATADIR/platillo.obj .
+ln -sf $DATADIR/platillo.mtl .
